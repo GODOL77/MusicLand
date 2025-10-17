@@ -1,0 +1,24 @@
+﻿<Solution>
+  <Project Path="SingularityGroup.HotReload.Editor.csproj" />
+  <Project Path="Febucci.TextAnimator.Editor.csproj" />
+  <Project Path="Febucci.TextAnimator.Runtime.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Opsive.BehaviorDesigner.Runtime.csproj" />
+  <Project Path="VFolders.csproj" />
+  <Project Path="VInspector.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="VTabs.csproj" />
+  <Project Path="Opsive.BehaviorDesigner.Editor.Managers.csproj" />
+  <Project Path="VFavorites.csproj" />
+  <Project Path="VHierarchy.csproj" />
+  <Project Path="SingularityGroup.HotReload.Runtime.Public.csproj" />
+  <Project Path="Opsive.GraphDesigner.Runtime.Wrappers.csproj" />
+  <Project Path="Opsive.BehaviorDesigner.Editor.Controls.NodeViews.csproj" />
+  <Project Path="SingularityGroup.HotReload.Runtime.csproj" />
+  <Project Path="Febucci.TextAnimator.Demo.Runtime.csproj" />
+  <Project Path="Febucci.Attributes.Editor.csproj" />
+  <Project Path="Opsive.Shared.Editor.Import.csproj" />
+  <Project Path="Opsive.Shared.Runtime.csproj" />
+  <Project Path="Febucci.Attributes.Runtime.csproj" />
+  <Project Path="Febucci.TextAnimator.TMP.Runtime.csproj" />
+</Solution>
