@@ -10,6 +10,7 @@
   <Project Path="VTabs.csproj" />
   <Project Path="Opsive.BehaviorDesigner.Editor.Managers.csproj" />
   <Project Path="VFavorites.csproj" />
+  <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="VHierarchy.csproj" />
   <Project Path="SingularityGroup.HotReload.Runtime.Public.csproj" />
   <Project Path="Opsive.GraphDesigner.Runtime.Wrappers.csproj" />
@@ -18,6 +19,7 @@
   <Project Path="Febucci.TextAnimator.Demo.Runtime.csproj" />
   <Project Path="Febucci.Attributes.Editor.csproj" />
   <Project Path="Opsive.Shared.Editor.Import.csproj" />
+  <Project Path="Assembly-CSharp-Editor-firstpass.csproj" />
   <Project Path="Opsive.Shared.Runtime.csproj" />
   <Project Path="Febucci.Attributes.Runtime.csproj" />
   <Project Path="Febucci.TextAnimator.TMP.Runtime.csproj" />
