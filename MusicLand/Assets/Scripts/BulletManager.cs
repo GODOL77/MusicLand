@@ -14,6 +14,8 @@ public class BulletManager : MonoBehaviour
     public float fastBulletSpeed = 7f;
     public float slowBulletLifetime = 3f;
     public float fastBulletLifetime = 1.5f;
+    public float slowBulletDamage = 10f;
+    public float fastBulletDamage = 20f;
 
     // 현재 발사할 총알 타입 관리
     private BulletType currentBulletType = BulletType.Slow;

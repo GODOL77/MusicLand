@@ -26,6 +26,10 @@ public class PlayerControls : MonoBehaviour
     // 캐릭터 기본 바닥여부 -> True
     private bool isGrounded = true;
 
+    // 박자 관련
+    private float lastBeatTime;
+    [Header("Rhythm Settings")]
+    public float beatTolerance = 0.15f; // ±0.15초 안에 맞으면 "정확히 맞음" 판정이 뜨면서 캐릭터 강화됨
 
     // 컴포넌트 가져오기
     private void Awake()
@@ -52,8 +56,17 @@ public class PlayerControls : MonoBehaviour
     }
 
     // Input System 활성화
-    private void OnEnable() => controls.Player.Enable();
-    private void OnDisable() => controls.Player.Disable();
+    private void OnEnable()
+    {
+        controls.Player.Enable();
+        BeatManager.OnBeat += OnBeat; // 박자 이벤트 구독
+    }
+
+    private void OnDisable()
+    {
+        controls.Player.Disable();
+        BeatManager.OnBeat -= OnBeat;
+    }
     #endregion
 
     private void Update()
@@ -109,13 +122,34 @@ public class PlayerControls : MonoBehaviour
         firePoint.localPosition = localPos;
     }
 
+    private void OnBeat()
+    {
+        lastBeatTime = Time.time;
+    }
+
     private void Attack() // FirePoint 위치에서 총알 발사
     {
         if (bulletManager == null || firePoint == null) return;
 
+        float timeSinceBeat = Math.Abs(timeSinceBeat.time - lastBeatTime);
         Vector2 fireDir = playerSpriteRenderer.flipX ? Vector2.left : Vector2.right;
 
-        // FireBullet 호출 시 BulletManager의 현재 타입 사용
-        bulletManager.FireBullet(firePoint.position, fireDir);
+        if (timeSinceBeat <= beatToleranceTolearance)
+        {
+            // 박자에 맞게 누름 + 강한 총알 발사
+            bulletManager.FireBullet(firePoint.position, fireDir, bulletManager.BulletType.Fast);
+            // playerAnimator.SetTrigger("AttackStrong");
+            Debug.Log("Nice Timing");
+        }
+        else
+        {
+            // 박자에 안맞음 -> 일반 총알 발사
+            bulletManager.FireBullet(firePoint.position, fireDir, bulletManager.BulletType.Slow);
+            // playerAnimator.SetTrigger("AttackNormal");
+            Debug.Log("Normal Attack!");
+        }
+
+            // FireBullet 호출 시 BulletManager의 현재 타입 사용
+            bulletManager.FireBullet(firePoint.position, fireDir);
     }
 }
