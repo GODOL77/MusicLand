@@ -53,6 +53,15 @@ public class PlayerManager : MonoBehaviour
 
         // 공격 상태 Animator에 반영
         animator.SetBool("isAttacking", isAttacking);
+        
+    }
+    private void Update()
+    {
+        // 플레이어 사망 처리
+        if (stats.IsDead())
+        {
+            Die();
+        }
     }
 
     #region 캐릭터 움직임 관련 정리
@@ -60,8 +69,16 @@ public class PlayerManager : MonoBehaviour
     {
         horizontal = context.ReadValue<Vector2>().x;
         // 🔹 이동 방향에 따라 캐릭터 좌우 뒤집기
-        if(horizontal > 0.05f) spriteRenderer.flipX = false;  // 오른쪽
-        else if(horizontal < -0.05f) spriteRenderer.flipX = true; // 왼쪽
+        if(horizontal > 0.05f) 
+        {
+            spriteRenderer.flipX = false;  // 오른쪽
+            attackPoint.localPosition = new Vector3(Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);
+        }
+        else if(horizontal < -0.05f) 
+        {
+            spriteRenderer.flipX = true; // 왼쪽
+            attackPoint.localPosition = new Vector3(-Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);
+        }
     }
 
 
@@ -99,14 +116,31 @@ public class PlayerManager : MonoBehaviour
     }
 
     private void FireProjectile()
-    {
-        if (projectilePrefab == null || attackPoint == null) return;
+{
+    if (projectilePrefab == null || attackPoint == null) return;
 
-        GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, Quaternion.identity);
-        Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
-        float direction = spriteRenderer.flipX ? -1f : 1f;
-        if (projRb != null) projRb.velocity = new Vector2(projectileSpeed * direction, 0f);
+    GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, Quaternion.identity);
+    Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
+    float direction = spriteRenderer.flipX ? -1f : 1f;
+    if (projRb != null) projRb.velocity = new Vector2(projectileSpeed * direction, 0f);
+
+    // Bullet 스크립트에 플레이어 공격력 적용
+    Bullet bulletScript = projectile.GetComponent<Bullet>();
+    if(bulletScript != null)
+    {
+        bulletScript.damage = stats.attackPower;
     }
+}
+
     #endregion
 
+    #region 플레이어 사망 처리
+    private void Die()
+    {
+        Debug.Log("플레이어 사망!");
+        animator.SetTrigger("isDie");  // 사망 애니메이션 트리거
+        rb.velocity = Vector2.zero;
+        this.enabled = false; // 플레이어 컨트롤 종료
+    }
+    #endregion
 }
