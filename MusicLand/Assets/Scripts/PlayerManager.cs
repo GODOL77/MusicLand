@@ -5,11 +5,12 @@ using UnityEngine.InputSystem;
 
 public class PlayerManager : MonoBehaviour
 {
-    #region inspector 정리
+    #region inspector 및 변수정리
 
     [Header("Player Component References")]
     [SerializeField] Rigidbody2D rb;
     [SerializeField] Animator animator;
+    [SerializeField] SpriteRenderer spriteRenderer;
 
     [Header("Player Settings")]
     [SerializeField] float speed;
@@ -18,9 +19,19 @@ public class PlayerManager : MonoBehaviour
     [Header("Grounding")]
     [SerializeField] LayerMask groundLayer;
     [SerializeField] Transform groundCheck;
-    #endregion
+
+    [Header("Stats")]
+    public PlayerStats stats = new PlayerStats();
+
+    [Header("Attack")]
+    [SerializeField] GameObject projectilePrefab;
+    [SerializeField] Transform attackPoint;
+    [SerializeField] float projectileSpeed = 10f;   // 발사체 속도
+    [SerializeField] float attackCooldown = 0.3f;  // 발사 쿨타임
+    private bool isAttacking = false;
 
     private float horizontal;
+    #endregion
 
     private void FixedUpdate()
     {
@@ -39,12 +50,18 @@ public class PlayerManager : MonoBehaviour
         {
             animator.SetBool("isJumping", false);
         }
+
+        // 공격 상태 Animator에 반영
+        animator.SetBool("isAttacking", isAttacking);
     }
 
     #region 캐릭터 움직임 관련 정리
     public void Move(InputAction.CallbackContext context)
     {
         horizontal = context.ReadValue<Vector2>().x;
+        // 🔹 이동 방향에 따라 캐릭터 좌우 뒤집기
+        if(horizontal > 0.05f) spriteRenderer.flipX = false;  // 오른쪽
+        else if(horizontal < -0.05f) spriteRenderer.flipX = true; // 왼쪽
     }
 
 
@@ -64,8 +81,32 @@ public class PlayerManager : MonoBehaviour
     }
     #endregion
 
-    public void Attack(InputAction.CallbackContext context)
+#region 공격 관련 정리 (Invoke 반복 발사)
+    public void Fire(InputAction.CallbackContext context)
     {
-        
+        if (context.started && !isAttacking)
+        {
+            isAttacking = true;
+            animator.SetBool("isAttacking", true);
+            InvokeRepeating(nameof(FireProjectile), 0f, attackCooldown); // 반복 발사 시작
+        }
+        else if (context.canceled) // 버튼 떼면 공격 종료
+        {
+            isAttacking = false;
+            animator.SetBool("isAttacking", false);
+            CancelInvoke(nameof(FireProjectile)); // 반복 발사 종료
+        }
     }
+
+    private void FireProjectile()
+    {
+        if (projectilePrefab == null || attackPoint == null) return;
+
+        GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, Quaternion.identity);
+        Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
+        float direction = spriteRenderer.flipX ? -1f : 1f;
+        if (projRb != null) projRb.velocity = new Vector2(projectileSpeed * direction, 0f);
+    }
+    #endregion
+
 }
