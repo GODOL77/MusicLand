@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
+#region 플레이어 체력관련
 public class PlayerStats
 {
     [Header("Basic Stats")]
@@ -12,8 +13,9 @@ public class PlayerStats
     [Header("Combat Stats")]
     public float attackPower = 10f;
     public float defense = 5f;
-    public float attackSpeed = 1f;   // 초당 공격 횟수
-
+    public float lightAttackSpeed = 1f;   // 초당 공격 횟수
+    public float strongAttackSpped = 1f;
+    #endregion
     public void TakeDamage(float damage)
     {
         float finalDamage = Mathf.Max(1f, damage - defense);
