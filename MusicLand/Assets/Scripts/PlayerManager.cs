@@ -8,35 +8,37 @@ public class PlayerManager : MonoBehaviour
     #region inspector 및 변수정리
 
     [Header("Player Component References")]
-    [SerializeField] Rigidbody2D rb;
-    [SerializeField] Animator animator;
-    [SerializeField] SpriteRenderer spriteRenderer;
-
-    [Header("Player Settings")]
-    [SerializeField] float speed;
-    [SerializeField] float jumpingPower;
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Animator animator;
+    [SerializeField] private SpriteRenderer spriteRenderer;
 
     [Header("Grounding")]
-    [SerializeField] LayerMask groundLayer;
-    [SerializeField] Transform groundCheck;
-
-    [Header("Stats")]
-    public PlayerStats stats = new PlayerStats();
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private Transform groundCheck;
 
     [Header("Attack")]
-    [SerializeField] GameObject projectilePrefab;
-    [SerializeField] Transform attackPoint;
-    [SerializeField] float projectileSpeed = 10f;   // 발사체 속도
-    [SerializeField] float attackCooldown = 0.3f;  // 발사 쿨타임
-    private bool isAttacking = false;
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform attackPoint;
+    [SerializeField] private float projectileSpeed = 10f;   // 발사체 속도
 
+    // PlayerStats 변수 가져오기
+    private PlayerStats stats;
     private float horizontal;
+    private bool isAttacking = false;
     #endregion
+
+    private void Awake()
+    {
+        stats = GetComponent<PlayerStats>();
+
+        if (stats == null)
+            Debug.LogError("[PlayerManager] PlayerStats 컴포넌트를 찾지 못했습니다!");
+    }
 
     private void FixedUpdate()
     {
         // 이동 처리
-        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+        rb.velocity = new Vector2(horizontal * stats.moveSpeed, rb.velocity.y);
 
         // Animator 관리
         animator.SetBool("isRunning", Mathf.Abs(horizontal) > 0.05f);
@@ -55,29 +57,21 @@ public class PlayerManager : MonoBehaviour
         animator.SetBool("isAttacking", isAttacking);
         
     }
-    private void Update()
-    {
-        // 플레이어 사망 처리
-        if (stats.IsDead())
-        {
-            Die();
-        }
-    }
 
-    #region 캐릭터 움직임 관련 정리
+    #region 캐릭터 움직임
     public void Move(InputAction.CallbackContext context)
     {
         horizontal = context.ReadValue<Vector2>().x;
-        // 🔹 이동 방향에 따라 캐릭터 좌우 뒤집기
+        // 이동 방향에 따라 캐릭터 좌우 뒤집기
         if(horizontal > 0.05f) 
         {
-            spriteRenderer.flipX = false;  // 오른쪽
-            attackPoint.localPosition = new Vector3(Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);
+            spriteRenderer.flipX = false;  // 캐릭터 X축반전 해제
+            attackPoint.localPosition = new Vector3(Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);  // 캐릭터 공격포인트 X축반전 해제
         }
         else if(horizontal < -0.05f) 
         {
-            spriteRenderer.flipX = true; // 왼쪽
-            attackPoint.localPosition = new Vector3(-Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);
+            spriteRenderer.flipX = true; // 캐릭터 X축반전
+            attackPoint.localPosition = new Vector3(-Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z); // 캐릭터 공격포인트 X축반전
         }
     }
 
@@ -86,7 +80,7 @@ public class PlayerManager : MonoBehaviour
     {
         if(context.performed && IsGrounded())
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+            rb.velocity = new Vector2(rb.velocity.x, stats.jumpForce);  // PlayerStats 변수사용
             animator.SetBool("isJumping", true);
         }
     }
@@ -98,14 +92,14 @@ public class PlayerManager : MonoBehaviour
     }
     #endregion
 
-#region 공격 관련 정리 (Invoke 반복 발사)
+#region 캐릭터 공격
     public void Fire(InputAction.CallbackContext context)
     {
         if (context.started && !isAttacking)
         {
             isAttacking = true;
             animator.SetBool("isAttacking", true);
-            InvokeRepeating(nameof(FireProjectile), 0f, attackCooldown); // 반복 발사 시작
+            InvokeRepeating(nameof(FireProjectile), 0f, stats.lightAttackCooldown); // 반복 발사 시작
         }
         else if (context.canceled) // 버튼 떼면 공격 종료
         {
@@ -122,13 +116,16 @@ public class PlayerManager : MonoBehaviour
     GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, Quaternion.identity);
     Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
     float direction = spriteRenderer.flipX ? -1f : 1f;
-    if (projRb != null) projRb.velocity = new Vector2(projectileSpeed * direction, 0f);
+    if (projRb != null)
+    {
+        projRb.velocity = new Vector2(projectileSpeed * direction, 0f);
+    }
 
     // Bullet 스크립트에 플레이어 공격력 적용
     Bullet bulletScript = projectile.GetComponent<Bullet>();
     if(bulletScript != null)
     {
-        bulletScript.damage = stats.attackPower;
+        bulletScript.damage = stats.playerBaseDamage;
     }
 }
 
@@ -137,10 +134,14 @@ public class PlayerManager : MonoBehaviour
     #region 플레이어 사망 처리
     private void Die()
     {
-        Debug.Log("플레이어 사망!");
-        animator.SetTrigger("isDie");  // 사망 애니메이션 트리거
+        Debug.Log("[PlayerManager] 플레이어 사망!");
+
         rb.velocity = Vector2.zero;
-        this.enabled = false; // 플레이어 컨트롤 종료
+        animator.SetTrigger("isDie");
+
+        // 모든 행동 중지
+        CancelInvoke();
+        this.enabled = false;
     }
     #endregion
 }

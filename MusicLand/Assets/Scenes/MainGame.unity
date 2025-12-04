@@ -746,6 +746,7 @@ GameObject:
   - component: {fileID: 826878040}
   - component: {fileID: 826878042}
   - component: {fileID: 826878043}
+  - component: {fileID: 826878044}
   m_Layer: 7
   m_Name: Character_Devil
   m_TagString: Player
@@ -947,10 +948,6 @@ MonoBehaviour:
     m_ActionId: 7bd799cd-e436-418f-9058-d783790ea272
     m_ActionName: Player/Move[/Keyboard/w,/Keyboard/upArrow,/Keyboard/s,/Keyboard/downArrow,/Keyboard/a,/Keyboard/leftArrow,/Keyboard/d,/Keyboard/rightArrow]
   - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 51995d34-3fe1-4ff9-97f2-6f651dd937fa
-    m_ActionName: Player/Look[/Mouse/delta,/Touchscreen/delta,/Pen/delta]
-  - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 826878043}
         m_TargetAssemblyTypeName: PlayerManager, Assembly-CSharp
@@ -1042,22 +1039,33 @@ MonoBehaviour:
   rb: {fileID: 826878041}
   animator: {fileID: 826878037}
   spriteRenderer: {fileID: 826878038}
-  speed: 10
-  jumpingPower: 7
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   groundCheck: {fileID: 67366390}
-  stats:
-    maxHP: 100
-    currentHP: 100
-    attackPower: 10
-    defense: 5
-    attackSpeed: 1
   projectilePrefab: {fileID: 4091051528309658751, guid: c8c20a873fdb212439b68c73ef8fa87c, type: 3}
   attackPoint: {fileID: 1471921256}
   projectileSpeed: 10
-  attackCooldown: 0.3
+--- !u!114 &826878044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 826878036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96d2cd030f8ca2a4ca75e70185aa7922, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentHP: 100
+  maxHP: 100
+  playerBaseDamage: 10
+  playerDefence: 5
+  moveSpeed: 10
+  jumpForce: 7
+  lightAttackCooldown: 1
+  strongAttackCooldown: 3
 --- !u!1 &865433797
 GameObject:
   m_ObjectHideFlags: 0
