@@ -19,8 +19,11 @@ MonoBehaviour:
     - 51197aa4cc11cf745ac788be71e0bbb3
     - 832b89528faf4b44496458041ff07dc1
     - 109e9bdd0fcc649c5bc59085c35bdc83
+    - f1df0723d06899e4094b574b572d2c0b
+    - 6e6431176b7c6664881bbddfe3c40bfd
+    - bc86cc65e4116f1489a15d19ffca1472
     values:
-    - iconNameOrGuid: Prefab Icon
+    - iconNameOrGuid: ScriptableObject Icon
       colorIndex: 1
       isIconRecursive: 0
       isColorRecursive: 0
@@ -38,6 +41,18 @@ MonoBehaviour:
       isColorRecursive: 0
     - iconNameOrGuid: SceneAsset Icon
       colorIndex: 6
+      isIconRecursive: 0
+      isColorRecursive: 0
+    - iconNameOrGuid: PrefabModel Icon
+      colorIndex: 9
+      isIconRecursive: 0
+      isColorRecursive: 0
+    - iconNameOrGuid: AudioMixerController Icon
+      colorIndex: 2
+      isIconRecursive: 0
+      isColorRecursive: 0
+    - iconNameOrGuid: Font Icon
+      colorIndex: 5
       isIconRecursive: 0
       isColorRecursive: 0
   bookmarks: []
