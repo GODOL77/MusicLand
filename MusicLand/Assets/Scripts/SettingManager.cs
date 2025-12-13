@@ -27,6 +27,7 @@ public class SettingManager : MonoBehaviour
 
     public void OnClick_ShowOperationPanel()
     {
+        Time.timeScale = 0f;
         operationUiPanel.SetActive(true);
         isOperationUiPaneActive = true;
 
@@ -45,6 +46,7 @@ public class SettingManager : MonoBehaviour
     {
         soundUiPanel.SetActive(true);
         isSoundUiPanelActive = true;
+        Time.timeScale = 0f;
 
 
 
@@ -62,6 +64,7 @@ public class SettingManager : MonoBehaviour
     {
         graphicsUiPanel.SetActive(true);
         isGraphicsUiPanelActive = true;
+        Time.timeScale = 0f;
 
 
 
@@ -84,7 +87,6 @@ public class SettingManager : MonoBehaviour
         
         graphicsUiPanel.SetActive(false);
         isGraphicsUiPanelActive = false;
-
         Debug.Log("All Content Panels Hidden.");
     }
 }

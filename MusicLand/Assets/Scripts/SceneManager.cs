@@ -14,13 +14,13 @@ public class SceneController : MonoBehaviour
     // 메인 게임으로 이동
     public void GoMainGame()
     {
-        SceneManager.LoadScene("MainGame");
+        SceneManager.LoadScene("Tutorial");
     }
 
     // 타이틀 화면으로 이동
     public void GoTitle()
     {
-        SceneManager.LoadScene("Title");
+        SceneManager.LoadScene("GameStart");
     }
 
     // 게임 종료
