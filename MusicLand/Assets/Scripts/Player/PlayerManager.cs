@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -19,12 +20,17 @@ public class PlayerManager : MonoBehaviour
     [Header("Attack")]
     [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform attackPoint;
-    [SerializeField] private float projectileSpeed = 10f;   // 발사체 속도
+    [SerializeField] private float projectileSpeed = 10f;
 
-    // PlayerStats 변수 가져오기
+    [Header("UI References")]
+    [SerializeField] private Animator lpAnimator;
+    [SerializeField] private UnityEngine.UI.Slider hpSlider; 
+
     private PlayerStats stats;
     private float horizontal;
     private bool isAttacking = false;
+    private bool isDead = false; // 내부 로직용 생사 플래그
+    private float targetHP;
     #endregion
 
     private void Awake()
@@ -32,116 +38,207 @@ public class PlayerManager : MonoBehaviour
         stats = GetComponent<PlayerStats>();
 
         if (stats == null)
+        {
             Debug.LogError("[PlayerManager] PlayerStats 컴포넌트를 찾지 못했습니다!");
+            return;
+        }
+
+        // 게임 시작 시 초기화
+        stats.currentHP = stats.maxHP;
+        isDead = false;
+        
+        if (hpSlider != null)
+        {
+            hpSlider.maxValue = stats.maxHP;
+            hpSlider.value = stats.currentHP;
+            targetHP = stats.currentHP;
+        }
+
+        // [중요] 애니메이터 초기화 (isDie Bool을 false로)
+        if (animator != null)
+        {
+            animator.SetBool("isDie", false);
+        }
+    }
+
+    private void Update()
+    {
+        if (isDead) return;
+
+        if (hpSlider != null && stats != null)
+        {
+            hpSlider.value = stats.currentHP;
+        }
     }
 
     private void FixedUpdate()
     {
-        // 이동 처리
-        rb.velocity = new Vector2(horizontal * stats.moveSpeed, rb.velocity.y);
+        if (stats == null || isDead) return;
 
-        // Animator 관리
+        rb.velocity = new Vector2(horizontal * stats.moveSpeed, rb.velocity.y);
         animator.SetBool("isRunning", Mathf.Abs(horizontal) > 0.05f);
 
-        // isGrounded 체크
         bool grounded = IsGrounded();
         animator.SetBool("isGrounded", grounded);
 
-        // 착지시 점프 종료
         if (grounded)
         {
             animator.SetBool("isJumping", false);
         }
 
-        // 공격 상태 Animator에 반영
         animator.SetBool("isAttacking", isAttacking);
-        
     }
 
     #region 캐릭터 움직임
     public void Move(InputAction.CallbackContext context)
     {
+        if (isDead) { horizontal = 0; return; }
+
         horizontal = context.ReadValue<Vector2>().x;
-        // 이동 방향에 따라 캐릭터 좌우 뒤집기
         if(horizontal > 0.05f) 
         {
-            spriteRenderer.flipX = false;  // 캐릭터 X축반전 해제
-            attackPoint.localPosition = new Vector3(Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);  // 캐릭터 공격포인트 X축반전 해제
+            spriteRenderer.flipX = false;
+            attackPoint.localPosition = new Vector3(Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);
         }
         else if(horizontal < -0.05f) 
         {
-            spriteRenderer.flipX = true; // 캐릭터 X축반전
-            attackPoint.localPosition = new Vector3(-Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z); // 캐릭터 공격포인트 X축반전
+            spriteRenderer.flipX = true;
+            attackPoint.localPosition = new Vector3(-Mathf.Abs(attackPoint.localPosition.x), attackPoint.localPosition.y, attackPoint.localPosition.z);
         }
     }
 
-
     public void Jump(InputAction.CallbackContext context)
     {
-        if(context.performed && IsGrounded())
+        if (isDead) return;
+
+        if(context.performed && IsGrounded() && stats != null)
         {
-            rb.velocity = new Vector2(rb.velocity.x, stats.jumpForce);  // PlayerStats 변수사용
+            rb.velocity = new Vector2(rb.velocity.x, stats.jumpForce);
             animator.SetBool("isJumping", true);
         }
     }
 
-    // 땅인지 체크하는 함수
     private bool IsGrounded()
     {
+        if (groundCheck == null) return false;
         return Physics2D.OverlapCapsule(groundCheck.position, new Vector2(0.7f, 0.1f), CapsuleDirection2D.Horizontal, 0, groundLayer);
     }
     #endregion
 
-#region 캐릭터 공격
+    #region 캐릭터 공격
     public void Fire(InputAction.CallbackContext context)
     {
+        if (stats == null || isDead) return;
+
         if (context.started && !isAttacking)
         {
             isAttacking = true;
             animator.SetBool("isAttacking", true);
-            InvokeRepeating(nameof(FireProjectile), 0f, stats.lightAttackCooldown); // 반복 발사 시작
+            InvokeRepeating(nameof(FireProjectile), 0f, stats.lightAttackCooldown);
         }
-        else if (context.canceled) // 버튼 떼면 공격 종료
+        else if (context.canceled)
         {
             isAttacking = false;
             animator.SetBool("isAttacking", false);
-            CancelInvoke(nameof(FireProjectile)); // 반복 발사 종료
+            CancelInvoke(nameof(FireProjectile));
         }
     }
 
     private void FireProjectile()
-{
-    if (projectilePrefab == null || attackPoint == null) return;
-
-    GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, Quaternion.identity);
-    Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
-    float direction = spriteRenderer.flipX ? -1f : 1f;
-    if (projRb != null)
     {
-        projRb.velocity = new Vector2(projectileSpeed * direction, 0f);
-    }
+        if (projectilePrefab == null || attackPoint == null || stats == null || isDead) return;
 
-    // Bullet 스크립트에 플레이어 공격력 적용
-    Bullet bulletScript = projectile.GetComponent<Bullet>();
-    if(bulletScript != null)
-    {
-        bulletScript.damage = stats.playerBaseDamage;
-    }
-}
+        GameObject projectile = Instantiate(projectilePrefab, attackPoint.position, Quaternion.identity);
+        Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
+        float direction = spriteRenderer.flipX ? -1f : 1f;
+        if (projRb != null)
+        {
+            projRb.velocity = new Vector2(projectileSpeed * direction, 0f);
+        }
 
+        Bullet bulletScript = projectile.GetComponent<Bullet>();
+        if(bulletScript != null)
+        {
+            bulletScript.damage = stats.playerBaseDamage;
+        }
+    }
     #endregion
 
-    #region 플레이어 사망 처리
+    private void OnEnable()
+    {
+        if (stats != null)
+        {
+            stats.OnHit += PlayLPAnimaion;
+            stats.OnHit += UpdateHPBar;
+            stats.OnPlayerDeath += Die;
+        }
+    }
+
+    private void UpdateHPBar()
+    {
+        if (stats != null)
+        {
+            targetHP = stats.currentHP;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (stats != null)
+        {
+            stats.OnHit -= PlayLPAnimaion;
+            stats.OnHit -= UpdateHPBar;
+            stats.OnPlayerDeath -= Die;
+        }
+    }
+
+    private void PlayLPAnimaion()
+    {
+        if (lpAnimator != null && !isDead)
+        {
+            lpAnimator.SetTrigger("OnHit"); 
+        }
+    }
+
     private void Die()
     {
+        if (isDead) return; 
+        isDead = true;
+
         Debug.Log("[PlayerManager] 플레이어 사망!");
-
+        
         rb.velocity = Vector2.zero;
-        animator.SetTrigger("isDie");
+        
+        // 애니메이터에 설정된 Bool 파라미터 "isDie"를 true로 설정
+        if (animator != null)
+        {
+            animator.SetBool("isDie", true);
+        }
 
-        // 모든 행동 중지
+        // LP판 애니메이션 정지 처리 (파라미터가 있다면)
+        if (lpAnimator != null)
+        {
+            lpAnimator.SetBool("isDead", true); 
+        }
+
         CancelInvoke();
-        this.enabled = false;
+        StartCoroutine(RestartAfterDelay());
     }
-    #endregion
+
+    IEnumerator RestartAfterDelay()
+    {
+        Debug.Log("2초 뒤에 GameStart 씬을 로드합니다.");
+        yield return new WaitForSeconds(2f);
+        SceneManager.LoadScene("GameStart");
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (isDead) return;
+
+        if (collision.CompareTag("Boss"))
+        {
+            if (stats != null) stats.TakeDamage(10); 
+        }
+    }
 }

@@ -32,13 +32,18 @@ public class PlayerStats : MonoBehaviour
 
     // 사망 이벤트 처리
     public event Action OnPlayerDeath;
+    public event Action OnHit;
 
     // 플레이어 데미지 계산식
     public void TakeDamage(float damage)
     {
-        float finalDamage = damage - playerDefence;   // 나중에 계산식 직접 만들어서 수정할 것
+        float finalDamage = Mathf.Max(damage - playerDefence, 1);   // 나중에 계산식 직접 만들어서 수정할 것(일단 1데미지는 최소값으로 입도록 설정)
         currentHP -= finalDamage;
+
+        // 데미지를 입었을 때 이벤트 호출
+        OnHit?.Invoke();
         Debug.Log($"[PlayerStats] 데미지 {finalDamage} 받음 → 현재 HP: {currentHP}");
+
         if (currentHP <= 0)
         {
             currentHP = 0;
@@ -61,4 +66,5 @@ public class PlayerStats : MonoBehaviour
     {
         return playerBaseDamage * StrongAttackMultiplier;
     }
+
 }

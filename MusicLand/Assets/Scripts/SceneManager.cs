@@ -14,7 +14,7 @@ public class SceneController : MonoBehaviour
     // 메인 게임으로 이동
     public void GoMainGame()
     {
-        SceneManager.LoadScene("Tutorial");
+        SceneManager.LoadScene("BossFight");
     }
 
     // 타이틀 화면으로 이동
@@ -28,5 +28,11 @@ public class SceneController : MonoBehaviour
     {
         Debug.Log("게임 종료!");
         Application.Quit();
+    }
+
+    public void ClearGame()
+    {
+        Debug.Log("게임 클리어");
+        SceneManager.LoadScene("Clear");
     }
 }

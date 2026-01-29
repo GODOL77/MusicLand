@@ -224,8 +224,19 @@
                 },
                 {
                     "name": "",
+                    "id": "d2108c47-1a47-4c88-afc1-4571e7f66667",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Fire",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "331b684e-90e8-47df-ac85-1ed61c1701a1",
-                    "path": "<Keyboard>/c",
+                    "path": "<Keyboard>/x",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
